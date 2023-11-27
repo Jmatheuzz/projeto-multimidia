@@ -29,7 +29,7 @@ let correctAwnsers = 0;
 import OpenAI from "openai";
 
 const openAi = new OpenAI({
-  apiKey: "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",
+  apiKey: "apiKey",
   dangerouslyAllowBrowser: true,
 });
 
