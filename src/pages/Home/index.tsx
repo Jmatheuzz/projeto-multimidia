@@ -9,7 +9,6 @@ import {
 
 import * as S from "./styles";
 import { Question } from "../../components/Question/Question";
-import { Counter } from "../../components/Counter";
 
 export type QuestionOptionModel = {
   label: string;
@@ -27,20 +26,22 @@ let questions: QuestionModel[] = [];
 let correctAwnsers = 0;
 
 import OpenAI from "openai";
+import { mockedQuestionLists } from "../../questions";
 
 const openAi = new OpenAI({
   apiKey: "apiKey",
   dangerouslyAllowBrowser: true,
 });
 
-type OpenAiResult = { questions: {
-  question: string;
-  options: {
-    id: string;
-    label: string;
+export type OpenAiResult = {
+  questions: {
+    question: string;
+    options: {
+      id: string;
+      label: string;
+    }[];
+    correctOptionId: string;
   }[];
-  correctOptionId: string;
-}[]
 };
 
 const successSongs = ["success-song-1.mp3", "success-song-2.mp3"];
@@ -90,12 +91,9 @@ export function Home() {
         model: "gpt-3.5-turbo",
       });
 
-      console.log(chatCompletion);
-
       const result = JSON.parse(
         chatCompletion.choices[0].message.content!
       ) as OpenAiResult;
-
 
       const parsedData: QuestionModel[] = result.questions.map((question) => {
         return {
@@ -111,6 +109,23 @@ export function Home() {
       questions = parsedData;
     } catch (error) {
       console.log(error);
+
+      const staticQuestionListIndex = Math.floor(Math.random() * mockedQuestionLists.length);
+      const questionList = mockedQuestionLists[staticQuestionListIndex];
+
+      const parsedData: QuestionModel[] = questionList.questions.map((question) => {
+        return {
+          correctOptionId: question.correctOptionId,
+          options: question.options.map((option) => ({
+            label: option.label,
+            value: option.id,
+          })),
+          question: question.question,
+        };
+      });
+
+      questions = parsedData;
+      
     } finally {
       setIsLoading(false);
     }
@@ -200,7 +215,7 @@ export function Home() {
         {currentQuestion && (
           <>
             {/* <Counter onCounterEnd={handleTimeExpire} /> */}
-          
+
             <Question
               data={currentQuestion}
               onSelectOption={handleReplyQuestion}
